@@ -6,7 +6,7 @@ volatile long EncoderCounter = 0;
 volatile int32_t dTime; // Delt in time
 volatile bool DataPinVal;
 
-float vfilt, vprev = 0;
+
 
 void onPin2CHANGECallBackFunction() {
   static uint32_t lTime; // Saved Last Time of Last Pulse
@@ -27,16 +27,14 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ClockPin), onPin2CHANGECallBackFunction, RISING);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
 }
 
 void loop() {
   
-//  digitalWrite(5, HIGH);
-//  digitalWrite(6, LOW);
-//  analogWrite(7, 60);
   float DeltaTime;
   float SpeedInRPM = 0;
+  float vfilt = 0; 
+  float vprev = 0;
 
   static unsigned long SpamTimer;
   if ( (unsigned long)(millis() - SpamTimer) >= (100)) {
@@ -48,34 +46,38 @@ void loop() {
     SpeedInRPM = Multiplier / DeltaTime; 
     
   //filtering
-    vfilt = 0.854*vfilt + 0.0728*SpeedInRPM + 0.0728*vprev;
-    vprev = SpeedInRPM;
+//    vfilt = (0.854*vfilt + 0.0728*SpeedInRPM + 0.0728*vprev);//25hz
+// vfilt = (0.969*vfilt + 0.0155*SpeedInRPM + 0.0155*vprev);//5hz
+//  vfilt = 0.828*vfilt + 0.0861*SpeedInRPM + 0.0861*vprev;//30hz
+    vprev = SpeedInRPM;delay(1);
 
   //P
     long currT = micros();
-    float vt = 100*(sin(currT/1e6)>0);
-    float kp = 5; //change
-    float e = vt-vfilt;
+//    float vt = 1500*(sin(currT/1e6)>0);
+    float vt = 1500;
+    float kp = 0.1; //change
+    float e = vt-SpeedInRPM;
     float u = kp*e ;
 
-    int pwr = u;
-    pwr = constrain(pwr, -255, 255);
+    float pwr = u;
+//    pwr = constrain(pwr, -255, 255);
+    pwr = constrain(pwr, -70.0, 70.0); 
     motor(pwr);
    
     
-    Serial.print(SpeedInRPM , 3);
-    Serial.print(" RPM, ");
-    Serial.println();
-
-    Serial.print(vfilt , 3);
-    Serial.print(" RPM");
-    Serial.println();
-    delay(1);
+//   Serial.print("Vfilt:");
+//  Serial.print(vfilt, 3);
+//  Serial.print(",");
+  Serial.print("vt:");
+  Serial.println(vt);
+   Serial.print(",");
+  Serial.print("speedrpm:");
+  Serial.println(SpeedInRPM);
+    
   }
 }
 
 void motor(int spd){
-  digitalWrite(5, spd>0 ? 1:0);
-  digitalWrite(6, spd>0 ? 0:1);
-  analogWrite(7, abs(spd)); 
+  digitalWrite(6, spd>0 ? 1:0);
+  analogWrite(5, abs(spd)); 
 }
