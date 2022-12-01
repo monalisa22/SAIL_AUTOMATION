@@ -27,14 +27,12 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ClockPin), onPin2CHANGECallBackFunction, RISING);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
 }
 
 void loop() {
   
-  digitalWrite(5, HIGH);
   digitalWrite(6, LOW);
-  analogWrite(7, 60);
+  analogWrite(5, 50);
   float DeltaTime;
   float SpeedInRPM = 0;
 
@@ -48,15 +46,21 @@ void loop() {
     SpeedInRPM = Multiplier / DeltaTime; 
 
     vfilt = 0.854*vfilt + 0.0728*SpeedInRPM + 0.0728*vprev;
+// vfilt = 0.969*vfilt + 0.0155*SpeedInRPM + 0.0155*vprev;
+ vfilt = 0.828*vfilt + 0.0861*SpeedInRPM + 0.0861*vprev;
     vprev = SpeedInRPM;
     
-    Serial.print(SpeedInRPM , 3);
-    Serial.print(" RPM, ");
-    Serial.println();
+//    Serial.print(SpeedInRPM , 3);
+//    Serial.print(" RPM, ");
+//    Serial.println();
 
-    Serial.print(vfilt , 3);
-    Serial.print(" RPM");
-    Serial.println();
+
+  float vt = 1200;
+  Serial.print("Vfilt:");
+  Serial.print(vfilt, 3);
+  Serial.print(",");
+  Serial.print("vt:");
+  Serial.println(vt);
     delay(1);
   }
 }
