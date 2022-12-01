@@ -1,3 +1,5 @@
+//this code is currently not working
+
 #define ClockPin 3 // Must be pin 2 or 3
 
 #define Multiplier  150000.0
